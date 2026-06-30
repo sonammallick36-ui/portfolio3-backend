@@ -7,6 +7,7 @@
  */
 
 const Contact = require('../models/contactModel');
+const xss = require('xss');
 
 /**
  * Helper function to validate email addresses using a regular expression.
@@ -22,35 +23,44 @@ function isValidEmail(email) {
 
 /**
  * Handle POST /api/contact API requests.
- * Validates request body fields and inserts them into the MySQL database.
+ * Sanitizes input parameters using the 'xss' package and then performs validation.
+ * Inserts the safe data into the MySQL database if valid.
  */
 exports.submitContact = async (req, res, next) => {
   try {
     const { name, email, subject, message } = req.body;
 
+    // --- Sanitization Section ---
+    // Sanitize input values with 'xss' to close Stored XSS gaps.
+    // Trim remaining whitespace to prevent saving empty/whitespace messages.
+    const sanitizedName = name ? xss(name).trim() : '';
+    const sanitizedEmail = email ? xss(email).trim() : '';
+    const sanitizedSubject = subject ? xss(subject).trim() : '';
+    const sanitizedMessage = message ? xss(message).trim() : '';
+
     // --- Validation Section ---
     const errors = [];
 
-    // Check if name is provided and not empty (after trimming whitespace)
-    if (!name || name.trim() === '') {
+    // Check if name is provided and not empty
+    if (!sanitizedName) {
       errors.push('Name is required.');
     }
 
     // Check if email is provided and not empty
-    if (!email || email.trim() === '') {
+    if (!sanitizedEmail) {
       errors.push('Email is required.');
-    } else if (!isValidEmail(email)) {
+    } else if (!isValidEmail(sanitizedEmail)) {
       // Validate email format
       errors.push('Please provide a valid email address.');
     }
 
     // Check if subject is provided and not empty
-    if (!subject || subject.trim() === '') {
+    if (!sanitizedSubject) {
       errors.push('Subject is required.');
     }
 
     // Check if message is provided and not empty
-    if (!message || message.trim() === '') {
+    if (!sanitizedMessage) {
       errors.push('Message is required.');
     }
 
@@ -64,12 +74,12 @@ exports.submitContact = async (req, res, next) => {
     }
 
     // --- Database Insertion Section ---
-    // Prepare the trimmed data
+    // Use the sanitized data for insertion
     const contactData = {
-      name: name.trim(),
-      email: email.trim(),
-      subject: subject.trim(),
-      message: message.trim()
+      name: sanitizedName,
+      email: sanitizedEmail,
+      subject: sanitizedSubject,
+      message: sanitizedMessage
     };
 
     // Insert the details through the Contact model
