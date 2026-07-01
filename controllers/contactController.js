@@ -102,3 +102,31 @@ exports.submitContact = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Retrieve all contact messages (Admin-only).
+ * Requires query parameter `?password=...` matching process.env.ADMIN_PASSWORD.
+ */
+exports.getMessages = async (req, res, next) => {
+  try {
+    const { password } = req.query;
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'; // Fallback if not configured
+
+    if (!password || password !== adminPassword) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized access. Please provide a valid password.'
+      });
+    }
+
+    const messages = await Contact.findAll();
+    return res.status(200).json({
+      success: true,
+      count: messages.length,
+      data: messages
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};

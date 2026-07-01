@@ -13,4 +13,7 @@ const contactController = require('../controllers/contactController');
 // This route will be exposed at `/api/contact` after mounting in server.js.
 router.post('/', contactController.submitContact);
 
+// Define a GET route for retrieving messages with admin privileges
+router.get('/messages', contactController.getMessages);
+
 module.exports = router;
