@@ -19,6 +19,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy is required when hosting behind a reverse proxy (e.g., Render, Heroku)
+// to make express-rate-limit identify users correctly based on their real IP addresses.
+app.set('trust proxy', 1);
+
 // --- Global Security Headers (Helmet) ---
 app.use(helmet());
 
