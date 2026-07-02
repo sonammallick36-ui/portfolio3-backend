@@ -81,9 +81,24 @@ const contactRateLimiter = rateLimit({
   }
 });
 
+// Restrict requests to /api/chat to prevent OpenRouter key abuse (max 60 requests per 15 minutes)
+const chatRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 60, // Limit each IP to 60 chat requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many chat requests from this IP. Please try again after 15 minutes.'
+  }
+});
+
 // --- API Routing Configuration ---
 // Mount contact form router under "/api/contact" with rate limiting applied
 app.use('/api/contact', contactRateLimiter, require('./routes/contactRoutes'));
+
+// Mount AI chatbot router under "/api/chat" with rate limiting applied
+app.use('/api/chat', chatRateLimiter, require('./routes/chatRoutes'));
 
 // Health check endpoint for uptime monitors and platform deployment verification (e.g. Render)
 app.get('/health', (req, res) => {
