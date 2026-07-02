@@ -22,8 +22,8 @@ exports.handleChat = async (req, res, next) => {
     }
 
     // --- OpenRouter Configurations ---
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    const model = process.env.OPENROUTER_MODEL || 'meta-llama/llama-3-8b-instruct:free';
+    const apiKey = process.env.OPENROUTER_API_KEY ? process.env.OPENROUTER_API_KEY.trim() : null;
+    const model = process.env.OPENROUTER_MODEL ? process.env.OPENROUTER_MODEL.trim() : 'meta-llama/llama-3-8b-instruct:free';
 
     if (!apiKey) {
       console.error('❌ OpenRouter API key is missing from environment variables.');
